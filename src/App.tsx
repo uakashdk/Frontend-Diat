@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import DashboardLayout from "./layouts/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
+import AddMeal from "./pages/AddMeal";
+import UpdateMeal from "./pages/UpdateMeal";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/workouts" element={<Workouts />} />
             <Route path="/progress" element={<ProgressPage />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/add-meal" element={<AddMeal />} />
+            <Route path="/update-meal/:id" element={<UpdateMeal />} /> {/* NEW ROUTE FOR UPDATING MEAL */ }
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
