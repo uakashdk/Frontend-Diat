@@ -14,6 +14,8 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import AddMeal from "./pages/AddMeal";
 import UpdateMeal from "./pages/UpdateMeal";
+import UpdateGoal from "./pages/UpdateGoal";
+import AddProgress from "./pages/AddProgress";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/add-meal" element={<AddMeal />} />
             <Route path="/update-meal/:id" element={<UpdateMeal />} /> {/* NEW ROUTE FOR UPDATING MEAL */ }
+            <Route path="/update-goal/:id" element={<UpdateGoal />} /> {/* NEW ROUTE FOR UPDATING GOAL */ }
+            <Route path="/add-progress" element={<AddProgress />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

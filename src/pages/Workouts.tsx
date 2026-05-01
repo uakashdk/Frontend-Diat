@@ -1,186 +1,273 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dumbbell, Clock, Flame, Play, CheckCircle2 } from "lucide-react";
+import {
+  Dumbbell,
+  Clock,
+  Flame,
+  Play,
+  Pause,
+  Square,
+} from "lucide-react";
+
 import { toast } from "sonner";
 
 const Workouts = () => {
+  const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+
   const workoutPrograms = [
     {
       id: 1,
       name: "Full Body Strength",
-      duration: "45 min",
+      duration: 45,
       calories: 420,
       difficulty: "Intermediate",
       exercises: 8,
-      completed: true,
       color: "bg-blue-500",
     },
     {
       id: 2,
-      name: "HIIT Cardio Blast",
-      duration: "30 min",
+      name: "HIIT Cardio",
+      duration: 30,
       calories: 380,
       difficulty: "Advanced",
       exercises: 6,
-      completed: false,
       color: "bg-orange-500",
     },
     {
       id: 3,
-      name: "Yoga & Flexibility",
-      duration: "40 min",
+      name: "Yoga",
+      duration: 40,
       calories: 180,
       difficulty: "Beginner",
       exercises: 12,
-      completed: false,
       color: "bg-green-500",
-    },
-    {
-      id: 4,
-      name: "Core & Abs Workout",
-      duration: "25 min",
-      calories: 220,
-      difficulty: "Intermediate",
-      exercises: 10,
-      completed: false,
-      color: "bg-purple-500",
     },
   ];
 
-  const todaysWorkout = {
-    name: "Upper Body Power",
-    exercises: [
-      { name: "Push-ups", sets: 3, reps: 15, rest: "60s" },
-      { name: "Dumbbell Press", sets: 4, reps: 12, rest: "90s" },
-      { name: "Pull-ups", sets: 3, reps: 10, rest: "90s" },
-      { name: "Shoulder Press", sets: 3, reps: 12, rest: "60s" },
-      { name: "Bicep Curls", sets: 3, reps: 15, rest: "45s" },
-    ],
+  // ⏱ TIMER LOGIC
+  useEffect(() => {
+    let timer: any;
+
+    if (isRunning && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev: number) => prev - 1);
+      }, 1000);
+    }
+
+    if (timeLeft === 0 && isRunning) {
+      handleStop();
+    }
+
+    return () => clearInterval(timer);
+  }, [isRunning, timeLeft]);
+
+  const startWorkout = (workout: any) => {
+    setSelectedWorkout(workout);
+    setTimeLeft(workout.duration * 60);
+    setIsRunning(true);
+
+    toast.success(`Started ${workout.name} 💪`);
   };
 
-  const handleStartWorkout = (workoutName: string) => {
-    toast.success(`Starting ${workoutName}! Let's go! 💪`);
+  const handlePause = () => {
+    setIsRunning(false);
+  };
+
+  const handleResume = () => {
+    setIsRunning(true);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+
+    if (selectedWorkout) {
+      const completedMinutes =
+        selectedWorkout.duration -
+        Math.floor(timeLeft / 60);
+
+      setHistory((prev) => [
+        {
+          name: selectedWorkout.name,
+          minutes: completedMinutes,
+          date: new Date().toLocaleString(),
+        },
+        ...prev,
+      ]);
+
+      toast.success("Workout Completed 🎉");
+    }
+
+    setSelectedWorkout(null);
+    setTimeLeft(0);
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
+
+      {/* HEADER */}
       <div>
-        <h1 className="text-4xl font-bold mb-2">Workouts</h1>
-        <p className="text-muted-foreground text-lg">
-          Choose your workout and start crushing your goals
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          Workout Zone
+        </h1>
+        <p className="text-muted-foreground">
+          Train smart. Track better. 🚀
         </p>
       </div>
 
-      {/* Today's Workout */}
-      <Card className="shadow-lg bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
-        <CardHeader>
-          <div className="flex items-start justify-between">
+      {/* ACTIVE WORKOUT */}
+      {selectedWorkout && (
+        <Card className="p-6 bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 backdrop-blur-xl shadow-2xl">
+
+          <div className="flex justify-between items-center">
+
             <div>
-              <Badge className="mb-2">Today's Workout</Badge>
-              <CardTitle className="text-2xl">{todaysWorkout.name}</CardTitle>
-              <CardDescription className="text-base mt-2">
-                Complete this workout to stay on track with your goals
-              </CardDescription>
+              <h2 className="text-2xl font-bold">
+                {selectedWorkout.name}
+              </h2>
+              <p className="text-muted-foreground">
+                Live workout in progress
+              </p>
             </div>
-            <Button
-              size="lg"
-              onClick={() => handleStartWorkout(todaysWorkout.name)}
-              className="bg-gradient-to-r from-primary to-secondary"
-            >
-              <Play className="mr-2 h-5 w-5" />
-              Start Now
-            </Button>
+
+            <div className="text-4xl font-bold text-primary">
+              {formatTime(timeLeft)}
+            </div>
+
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {todaysWorkout.exercises.map((exercise, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 rounded-lg bg-card border"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-primary">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{exercise.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Rest: {exercise.rest}
-                    </p>
-                  </div>
+
+          <div className="flex gap-3 mt-6">
+
+            {!isRunning ? (
+              <Button onClick={handleResume}>
+                <Play className="mr-2" />
+                Resume
+              </Button>
+            ) : (
+              <Button onClick={handlePause} variant="outline">
+                <Pause className="mr-2" />
+                Pause
+              </Button>
+            )}
+
+            <Button
+              variant="destructive"
+              onClick={handleStop}
+            >
+              <Square className="mr-2" />
+              Stop
+            </Button>
+
+          </div>
+
+        </Card>
+      )}
+
+      {/* WORKOUT LIST */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {workoutPrograms.map((w) => (
+          <Card
+            key={w.id}
+            className="group hover:scale-105 transition-all bg-white/5 border border-white/10 backdrop-blur-xl"
+          >
+            <CardHeader>
+              <div className="flex gap-3">
+                <div className={`${w.color} p-3 rounded-xl`}>
+                  <Dumbbell className="text-white" />
                 </div>
-                <div className="text-right">
-                  <div className="font-bold">
-                    {exercise.sets} × {exercise.reps}
-                  </div>
-                  <div className="text-xs text-muted-foreground">sets × reps</div>
+
+                <div>
+                  <CardTitle>{w.name}</CardTitle>
+                  <Badge variant="secondary">{w.difficulty}</Badge>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardHeader>
 
-      {/* Workout Programs */}
+            <CardContent>
+
+              <div className="grid grid-cols-3 gap-3 mb-4">
+
+                <div className="text-center">
+                  <Clock className="mx-auto text-primary" />
+                  <p>{w.duration}m</p>
+                </div>
+
+                <div className="text-center">
+                  <Flame className="mx-auto text-orange-400" />
+                  <p>{w.calories}</p>
+                </div>
+
+                <div className="text-center">
+                  <Dumbbell className="mx-auto text-blue-400" />
+                  <p>{w.exercises}</p>
+                </div>
+
+              </div>
+
+              <Button
+                className="w-full bg-gradient-to-r from-primary to-secondary"
+                onClick={() => startWorkout(w)}
+              >
+                <Play className="mr-2" />
+                Start Workout
+              </Button>
+
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* HISTORY */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">All Workout Programs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {workoutPrograms.map((workout) => (
-            <Card key={workout.id} className="hover:shadow-lg transition-all">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className={`${workout.color} p-3 rounded-lg`}>
-                      <Dumbbell className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">{workout.name}</CardTitle>
-                      <div className="flex gap-2 mt-2">
-                        <Badge variant="secondary">{workout.difficulty}</Badge>
-                        {workout.completed && (
-                          <Badge className="bg-success">
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Completed
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+        <h2 className="text-2xl font-bold mb-4">
+          Workout History
+        </h2>
+
+        {history.length === 0 && (
+          <p className="text-muted-foreground">
+            No workouts yet
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {history.map((h, i) => (
+            <Card
+              key={i}
+              className="p-4 bg-white/5 border border-white/10"
+            >
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-semibold">{h.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {h.date}
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-3 bg-muted rounded-lg">
-                    <Clock className="h-5 w-5 mx-auto mb-1 text-primary" />
-                    <div className="text-sm font-semibold">{workout.duration}</div>
-                    <div className="text-xs text-muted-foreground">Duration</div>
-                  </div>
-                  <div className="text-center p-3 bg-muted rounded-lg">
-                    <Flame className="h-5 w-5 mx-auto mb-1 text-orange-500" />
-                    <div className="text-sm font-semibold">{workout.calories}</div>
-                    <div className="text-xs text-muted-foreground">Calories</div>
-                  </div>
-                  <div className="text-center p-3 bg-muted rounded-lg">
-                    <Dumbbell className="h-5 w-5 mx-auto mb-1 text-blue-500" />
-                    <div className="text-sm font-semibold">{workout.exercises}</div>
-                    <div className="text-xs text-muted-foreground">Exercises</div>
-                  </div>
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={() => handleStartWorkout(workout.name)}
-                  variant={workout.completed ? "outline" : "default"}
-                >
-                  <Play className="mr-2 h-4 w-4" />
-                  {workout.completed ? "Do Again" : "Start Workout"}
-                </Button>
-              </CardContent>
+
+                <p className="text-primary font-bold">
+                  {h.minutes} min
+                </p>
+              </div>
             </Card>
           ))}
         </div>
+
       </div>
+
     </div>
   );
 };
