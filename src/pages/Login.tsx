@@ -84,7 +84,7 @@ const handleLogin = async (e: React.FormEvent) => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-sm font-medium">
-                Username
+                Email 
               </Label>
               <Input
                 id="username"
